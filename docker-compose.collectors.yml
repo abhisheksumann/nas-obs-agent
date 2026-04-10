@@ -1,0 +1,47 @@
+# Collector services — add to your existing Immich docker-compose.yml
+# or run alongside it: docker compose -f docker-compose.yml -f docker-compose.collectors.yml up -d
+
+services:
+  node-exporter:
+    container_name: node_exporter
+    image: prom/node-exporter:latest
+    restart: always
+    pid: host
+    network_mode: host
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--path.rootfs=/rootfs'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+
+  cadvisor:
+    container_name: cadvisor
+    image: gcr.io/cadvisor/cadvisor:latest
+    restart: always
+    privileged: true
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    devices:
+      - /dev/kmsg
+
+  smartctl-exporter:
+    container_name: smartctl_exporter
+    image: prometheuscommunity/smartctl-exporter:latest
+    restart: always
+    privileged: true
+    user: root
+    volumes:
+      - /dev:/dev:ro
+
+  blackbox-exporter:
+    container_name: blackbox_exporter
+    image: prom/blackbox-exporter:latest
+    restart: always
