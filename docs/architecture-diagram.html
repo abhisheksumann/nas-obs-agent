@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NAS Observability + LLM Agent — Architecture</title>
+<style>
+  body { font-family: system-ui, sans-serif; background: #f5f5f0; margin: 0; padding: 24px; }
+  h1 { font-size: 18px; font-weight: 500; color: #1a1a18; margin: 0 0 20px; }
+  svg text { font-family: system-ui, sans-serif; }
+  @media (prefers-color-scheme: dark) {
+    body { background: #1a1a18; }
+    h1 { color: #e0ded4; }
+  }
+</style>
+</head>
+<body>
+<h1>NAS observability + LLM agent — architecture</h1>
+<svg width="100%" viewBox="0 0 680 580" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>NAS observability and LLM agent architecture diagram</title>
+<desc>Three layers: NAS collectors feeding Prometheus, Dell processing and LLM stack, and browser UI for querying</desc>
+<defs>
+  <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M2 1L8 5L2 9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+  <style>
+    .layer-teal { fill: #E1F5EE; stroke: #0F6E56; }
+    .layer-purple { fill: #EEEDFE; stroke: #534AB7; }
+    .layer-amber { fill: #FAEEDA; stroke: #854F0B; }
+    .layer-coral { fill: #FAECE7; stroke: #993C1D; }
+    .layer-gray { fill: #F1EFE8; stroke: #5F5E5A; }
+    .node-blue { fill: #E6F1FB; stroke: #185FA5; }
+    .node-purple { fill: #EEEDFE; stroke: #534AB7; }
+    .node-amber { fill: #FAEEDA; stroke: #854F0B; }
+    .node-coral { fill: #FAECE7; stroke: #993C1D; }
+    .node-gray { fill: #F1EFE8; stroke: #5F5E5A; }
+    .title { font-size: 14px; font-weight: 500; fill: #1a1a18; }
+    .sub { font-size: 12px; fill: #5a5a56; }
+    .arr { stroke: #888780; stroke-width: 1; fill: none; marker-end: url(#arrow); }
+    .arr-label { font-size: 11px; fill: #888780; }
+    @media (prefers-color-scheme: dark) {
+      .layer-teal { fill: #04342C; stroke: #5DCAA5; }
+      .layer-purple { fill: #26215C; stroke: #AFA9EC; }
+      .layer-amber { fill: #412402; stroke: #EF9F27; }
+      .layer-coral { fill: #4A1B0C; stroke: #F0997B; }
+      .layer-gray { fill: #2C2C2A; stroke: #B4B2A9; }
+      .node-blue { fill: #042C53; stroke: #85B7EB; }
+      .node-purple { fill: #26215C; stroke: #AFA9EC; }
+      .node-amber { fill: #412402; stroke: #EF9F27; }
+      .node-coral { fill: #4A1B0C; stroke: #F0997B; }
+      .node-gray { fill: #2C2C2A; stroke: #B4B2A9; }
+      .title { fill: #e0ded4; }
+      .sub { fill: #9c9a92; }
+      .arr { stroke: #5F5E5A; }
+      .arr-label { fill: #5F5E5A; }
+    }
+  </style>
+</defs>
+
+<!-- Layer 1: NAS collectors -->
+<rect x="40" y="30" width="600" height="140" rx="16" stroke-width="0.5" class="layer-teal"/>
+<text x="60" y="56" class="title">OpenMediaVault NAS — collectors (192.168.1.116)</text>
+
+<rect x="64" y="72" width="120" height="76" rx="8" stroke-width="0.5" class="node-blue"/>
+<text x="124" y="104" text-anchor="middle" class="title">Node Exporter</text>
+<text x="124" y="122" text-anchor="middle" class="sub">CPU, RAM, net</text>
+<text x="124" y="138" text-anchor="middle" class="sub">:9100</text>
+
+<rect x="204" y="72" width="120" height="76" rx="8" stroke-width="0.5" class="node-blue"/>
+<text x="264" y="104" text-anchor="middle" class="title">smartctl</text>
+<text x="264" y="122" text-anchor="middle" class="sub">Disk SMART health</text>
+<text x="264" y="138" text-anchor="middle" class="sub">:9633</text>
+
+<rect x="344" y="72" width="120" height="76" rx="8" stroke-width="0.5" class="node-blue"/>
+<text x="404" y="104" text-anchor="middle" class="title">cAdvisor</text>
+<text x="404" y="122" text-anchor="middle" class="sub">Immich, Photoprism</text>
+<text x="404" y="138" text-anchor="middle" class="sub">:8080</text>
+
+<rect x="484" y="72" width="120" height="76" rx="8" stroke-width="0.5" class="node-blue"/>
+<text x="544" y="104" text-anchor="middle" class="title">Blackbox</text>
+<text x="544" y="122" text-anchor="middle" class="sub">Service uptime</text>
+<text x="544" y="138" text-anchor="middle" class="sub">:9115</text>
+
+<!-- Arrow down -->
+<line x1="200" y1="170" x2="200" y2="212" class="arr"/>
+<line x1="340" y1="170" x2="340" y2="212" class="arr"/>
+<line x1="480" y1="170" x2="380" y2="212" class="arr"/>
+<text x="430" y="196" class="arr-label">scrape every 15s</text>
+
+<!-- Layer 2: Dell -->
+<rect x="40" y="212" width="600" height="240" rx="16" stroke-width="0.5" class="layer-purple"/>
+<text x="60" y="238" class="title">Dell Vostro 270 — processing, storage &amp; LLM</text>
+
+<rect x="64" y="254" width="160" height="76" rx="8" stroke-width="0.5" class="node-purple"/>
+<text x="144" y="286" text-anchor="middle" class="title">Prometheus</text>
+<text x="144" y="304" text-anchor="middle" class="sub">Metrics TSDB</text>
+<text x="144" y="320" text-anchor="middle" class="sub">:9090</text>
+
+<rect x="244" y="254" width="130" height="76" rx="8" stroke-width="0.5" class="node-purple"/>
+<text x="309" y="286" text-anchor="middle" class="title">Loki</text>
+<text x="309" y="304" text-anchor="middle" class="sub">Log aggregation</text>
+<text x="309" y="320" text-anchor="middle" class="sub">+ Promtail</text>
+
+<rect x="394" y="254" width="110" height="76" rx="8" stroke-width="0.5" class="node-purple"/>
+<text x="449" y="282" text-anchor="middle" class="title">Grafana</text>
+<text x="449" y="300" text-anchor="middle" class="sub">Dashboards</text>
+<text x="449" y="316" text-anchor="middle" class="sub">:3000</text>
+
+<rect x="524" y="254" width="100" height="76" rx="8" stroke-width="0.5" class="node-amber"/>
+<text x="574" y="282" text-anchor="middle" class="title">Ollama</text>
+<text x="574" y="300" text-anchor="middle" class="sub">llama3.2:3b</text>
+<text x="574" y="316" text-anchor="middle" class="sub">:11434</text>
+
+<rect x="64" y="358" width="560" height="72" rx="8" stroke-width="0.5" class="node-coral"/>
+<text x="344" y="385" text-anchor="middle" class="title">Observability agent (Python · FastAPI · :8000)</text>
+<text x="344" y="405" text-anchor="middle" class="sub">NL question → PromQL → Prometheus → LLM interpretation → plain English answer</text>
+<text x="344" y="421" text-anchor="middle" class="sub">tools: query_prometheus() · get_disk_health() · get_container_status() · get_alerts()</text>
+
+<!-- Arrow down -->
+<line x1="340" y1="430" x2="340" y2="468" class="arr"/>
+<text x="350" y="454" class="arr-label">HTTP</text>
+
+<!-- Layer 3: Browser -->
+<rect x="64" y="468" width="560" height="56" rx="8" stroke-width="0.5" class="node-gray"/>
+<text x="344" y="492" text-anchor="middle" class="title">Open WebUI — browser chat interface</text>
+<text x="344" y="510" text-anchor="middle" class="sub">Ask "is my NAS healthy?" from any device on the LAN</text>
+
+</svg>
+</body>
+</html>
